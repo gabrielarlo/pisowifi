@@ -1,0 +1,160 @@
+#!/bin/bash
+# Apply staged app/frontend/config files with backup + rollback.
+# Usage: piso-patch <stage-dir>
+set -uo pipefail
+
+LOG="${PISO_LOG:-/var/log/piso-patch.log}"
+ROOT="${PISO_ROOT:-/}"
+BACKUP_ROOT="${PISO_BACKUP_ROOT:-/var/backups/pisowifi}"
+BACKEND="$ROOT/opt/pisowifi/backend"
+FRONTEND="$ROOT/opt/pisowifi/frontend"
+CONFIG="$ROOT/etc/pisowifi"
+VENV="${PISO_VENV:-/opt/pisowifi/venv}"
+SYSTEMCTL="${PISO_SYSTEMCTL:-systemctl}"
+NGINX="${PISO_NGINX:-nginx}"
+LOCK="${PISO_LOCK:-/run/piso-patch.lock}"
+
+STAGE="${1:-}"
+BACKUP=""
+DONE=0
+ADDED_FILES=()
+AFFECTED=""
+
+log() { printf '%s %s\n' "$(date -u +%FT%TZ)" "$*" >> "$LOG"; }
+fail() { log "FAIL: $*"; echo "FAIL: $*" >&2; exit 1; }
+
+restore() {
+  [ -n "$BACKUP" ] || return 0
+  # Remove files this patch created.
+  for rel in ${ADDED_FILES[@]+"${ADDED_FILES[@]}"}; do
+    dest=$(map_dest "$rel" 2>/dev/null) || continue
+    rm -f "$dest"
+  done
+  # Restore overwritten files.
+  if [ -d "$BACKUP/files" ]; then
+    (cd "$BACKUP/files" && find . -type f -print0) | while IFS= read -r -d '' f; do
+      dest=$(map_dest "${f#./}" 2>/dev/null) || continue
+      mkdir -p "$(dirname "$dest")"
+      cp -a "$BACKUP/files/$f" "$dest"
+    done
+  fi
+}
+
+restart_services() {
+  [ -n "$AFFECTED" ] || return 0
+  local order="pisowifi-firewall dnsmasq-main dnsmasq-portal pisowifi-app pisowifi-sync pisowifi-coind nginx"
+  local svc
+  for svc in $order; do
+    if printf '%s\n' "$AFFECTED" | grep -qx "$svc"; then
+      "$SYSTEMCTL" restart "$svc" >/dev/null 2>&1 || log "restart failed: $svc"
+    fi
+  done
+}
+
+on_signal() { log "INTERRUPTED (signal)"; exit 130; }
+on_exit() {
+  local st=$?
+  if [ "$DONE" -eq 1 ] && [ "$st" -eq 0 ]; then
+    log "OK: patch applied"
+    return 0
+  fi
+  log "ROLLBACK (status $st)"
+  restore
+  restart_services
+  log "ROLLBACK complete"
+  exit "$st"
+}
+
+map_dest() {
+  case "$1" in
+    backend/app/*)  echo "$BACKEND/app/${1#backend/app/}" ;;
+    frontend/dist/*) echo "$FRONTEND/dist/${1#frontend/dist/}" ;;
+    device/nginx.conf|device/dnsmasq-*.conf|device/firewall.sh|device/sync.sh|device/coind.py)
+      echo "$CONFIG/$(basename "$1")" ;;
+    *) return 1 ;;
+  esac
+}
+
+services_for() {
+  case "$1" in
+    backend/app/*)          echo pisowifi-app pisowifi-sync pisowifi-coind ;;
+    frontend/dist/*)        echo nginx ;;
+    device/nginx.conf)      echo nginx ;;
+    device/dnsmasq-main.conf)   echo dnsmasq-main ;;
+    device/dnsmasq-portal.conf) echo dnsmasq-portal ;;
+    device/firewall.sh)     echo pisowifi-firewall pisowifi-sync ;;
+    device/sync.sh)         echo pisowifi-sync ;;
+    device/coind.py)        echo pisowifi-coind ;;
+  esac
+}
+
+main() {
+  [ -n "$STAGE" ] && [ -d "$STAGE" ] || fail "usage: piso-patch <stage-dir>"
+  exec 9>"$LOCK"
+  flock -n 9 || fail "another patch is running"
+
+  local files
+  files=$(cd "$STAGE" && find . -type f -o -type l | sed 's|^\./||' | sort)
+  [ -n "$files" ] || fail "nothing staged"
+
+  local rel dest svc
+  # Validate outside a pipeline: `fail` must exit the main script, not a subshell.
+  while IFS= read -r rel; do
+    map_dest "$rel" >/dev/null || fail "path not allowed: $rel"
+    [ -L "$STAGE/$rel" ] && fail "symlink not allowed: $rel"
+    case "$rel" in *..*) fail "traversal not allowed: $rel" ;; esac
+  done <<< "$files"
+
+  local affected_file="${TMPDIR:-/tmp}/piso-affected.$$"
+  while IFS= read -r rel; do
+    services_for "$rel"
+  done <<< "$files" | sort -u > "$affected_file"
+  AFFECTED=$(cat "$affected_file")
+  rm -f "$affected_file"
+
+  BACKUP="$BACKUP_ROOT/$(date -u +%Y%m%dT%H%M%SZ)"
+  mkdir -p "$BACKUP/files"
+  log "PATCH start: $(echo "$files" | tr '\n' ' ')"
+
+  while IFS= read -r rel; do
+    dest=$(map_dest "$rel")
+    mkdir -p "$(dirname "$dest")"
+    if [ -e "$dest" ]; then
+      mkdir -p "$BACKUP/files/$(dirname "$rel")"
+      cp -a "$dest" "$BACKUP/files/$rel"
+    else
+      ADDED_FILES+=("$rel")
+    fi
+    cp "$STAGE/$rel" "$dest" || fail "copy failed: $rel"
+  done <<< "$files"
+
+  # Validate before restarting.
+  if printf '%s\n' "$files" | grep -q '^backend/app/'; then
+    "$VENV/bin/python" -c "import sys; sys.path.insert(0,'$BACKEND'); import app.main" \
+      || fail "backend import failed"
+  fi
+  if printf '%s\n' "$files" | grep -q '^device/nginx.conf$'; then
+    "$NGINX" -t >/dev/null 2>&1 || fail "nginx config invalid"
+  fi
+  if printf '%s\n' "$files" | grep -q '^device/dnsmasq-'; then
+    for c in dnsmasq-main.conf dnsmasq-portal.conf; do
+      dnsmasq --test --conf-file="$CONFIG/$c" >/dev/null 2>&1 || fail "dnsmasq config invalid: $c"
+    done
+  fi
+  if printf '%s\n' "$files" | grep -q '^device/firewall.sh$'; then
+    sh -n "$CONFIG/firewall.sh" || fail "firewall syntax invalid"
+  fi
+  if printf '%s\n' "$files" | grep -q '^device/coind.py$'; then
+    "$VENV/bin/python" -m py_compile "$CONFIG/coind.py" || fail "coind syntax invalid"
+  fi
+
+  restart_services || fail "restart failed"
+
+  # Keep only the last 5 backups.
+  (cd "$BACKUP_ROOT" 2>/dev/null && ls -1dt */ 2>/dev/null | tail -n +6 | xargs -r rm -rf) || true
+  DONE=1
+}
+
+trap on_signal HUP INT TERM
+trap on_exit EXIT
+main "$@"

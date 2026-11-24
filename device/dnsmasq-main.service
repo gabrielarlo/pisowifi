@@ -1,0 +1,12 @@
+[Unit]
+Description=Piso WiFi guest DHCP + upstream DNS
+After=pisowifi-network.service
+Requires=pisowifi-network.service
+
+[Service]
+ExecStart=/usr/sbin/dnsmasq --conf-file=/etc/pisowifi/dnsmasq-main.conf --keep-in-foreground
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

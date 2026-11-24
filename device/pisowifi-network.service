@@ -1,0 +1,12 @@
+[Unit]
+Description=Piso WiFi guest network (guest0 / 10.0.0.1)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'ip link set guest0 up; ip addr replace 10.0.0.1/24 dev guest0; sysctl -w net.ipv6.conf.guest0.disable_ipv6=1'
+
+[Install]
+WantedBy=multi-user.target

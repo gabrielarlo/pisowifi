@@ -1,0 +1,23 @@
+- generic [ref=f2e3]:
+  - banner [ref=f2e4]:
+    - generic [ref=f2e5]:
+      - generic [ref=f2e6]:
+        - heading "Piso WiFi" [level=1] [ref=f2e7]
+        - paragraph [ref=f2e8]: Pay as you go internet
+      - link "Console" [ref=f2e9] [cursor=pointer]:
+        - /url: /console
+  - main [ref=f2e10]:
+    - generic [ref=f2e11]:
+      - generic [ref=f2e12]:
+        - generic [ref=f2e13]:
+          - paragraph [ref=f2e14]: Your coin balance
+          - paragraph [ref=f2e15]: 0 coin(s)
+        - generic [ref=f2e16]: Live
+      - paragraph [ref=f2e17]: Insert a coin at the slot to add credit. The counter updates automatically.
+    - heading "Choose your time" [level=2] [ref=f2e19]
+    - generic [ref=f2e20]:
+      - heading "Have a voucher?" [level=2] [ref=f2e21]
+      - generic [ref=f2e22]:
+        - textbox "Enter code" [ref=f2e23]
+        - button "Redeem" [ref=f2e24]
+    - paragraph

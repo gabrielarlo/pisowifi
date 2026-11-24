@@ -1,0 +1,12 @@
+[Unit]
+Description=Piso WiFi guest DNS interception
+After=pisowifi-network.service pisowifi-firewall.service
+Requires=pisowifi-network.service
+
+[Service]
+ExecStart=/usr/sbin/dnsmasq --conf-file=/etc/pisowifi/dnsmasq-portal.conf --keep-in-foreground
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

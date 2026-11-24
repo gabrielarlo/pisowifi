@@ -1,0 +1,40 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - heading "Piso WiFi" [level=1] [ref=e7]
+        - paragraph [ref=e8]: Pay as you go internet
+      - link "Console" [ref=e9] [cursor=pointer]:
+        - /url: /console
+  - main [ref=e10]:
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - paragraph [ref=e14]: Your coin balance
+          - paragraph [ref=e15]: 0 coin(s)
+        - generic [ref=e16]: Live
+      - paragraph [ref=e17]: Insert a coin at the slot to add credit. The counter updates automatically.
+    - generic [ref=e18]:
+      - heading "Choose your time" [level=2] [ref=e19]
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - heading "30 minutes" [level=3] [ref=e22]
+          - paragraph [ref=e23]: 30 minutes of internet
+          - paragraph [ref=e24]: 1 coin(s) · PHP 10
+          - button "Not enough coins" [disabled] [ref=e25]
+        - generic [ref=e26]:
+          - heading "1 hour" [level=3] [ref=e27]
+          - paragraph [ref=e28]: 60 minutes of internet
+          - paragraph [ref=e29]: 2 coin(s) · PHP 20
+          - button "Not enough coins" [disabled] [ref=e30]
+        - generic [ref=e31]:
+          - heading "2 hours" [level=3] [ref=e32]
+          - paragraph [ref=e33]: 120 minutes of internet
+          - paragraph [ref=e34]: 4 coin(s) · PHP 40
+          - button "Not enough coins" [disabled] [ref=e35]
+    - generic [ref=e36]:
+      - heading "Have a voucher?" [level=2] [ref=e37]
+      - generic [ref=e38]:
+        - textbox "Enter code" [ref=e39]
+        - button "Redeem" [ref=e40]
+    - paragraph [ref=e41]: Pay as you go internet. Insert a coin or enter a voucher code to start.

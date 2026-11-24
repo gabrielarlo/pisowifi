@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      PISO_DB_PATH: /data/pisowifi.db
+      # Dev-only: backend is not published, so this never reaches guests.
+      PISO_MOCK_MAC: ${PISO_MOCK_MAC:-aa:bb:cc:dd:ee:01}
+    volumes:
+      - piso-data:/data
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  piso-data:

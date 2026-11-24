@@ -1,0 +1,7 @@
+# Rename the USB guest NIC early (wins over 73-usb-net-by-mac.link).
+# guest0 does not match netplan's e* DHCP rule; other dongles need a different Driver match.
+[Match]
+Driver=r8152
+
+[Link]
+Name=guest0

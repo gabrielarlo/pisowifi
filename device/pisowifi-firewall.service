@@ -1,0 +1,12 @@
+[Unit]
+Description=Piso WiFi firewall (gating + DNS/HTTP redirect)
+After=pisowifi-network.service
+Requires=pisowifi-network.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh /etc/pisowifi/firewall.sh
+
+[Install]
+WantedBy=multi-user.target

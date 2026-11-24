@@ -1,0 +1,12 @@
+[Unit]
+Description=Piso WiFi authorized-MAC sync
+After=pisowifi-app.service pisowifi-firewall.service
+Requires=pisowifi-app.service pisowifi-firewall.service
+
+[Service]
+ExecStart=/bin/sh /etc/pisowifi/sync.sh
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
