@@ -1,0 +1,14 @@
+[Unit]
+Description=Piso WiFi QoS shaping (tc htb on guest0)
+After=network-online.target pisowifi-network.service
+Wants=network-online.target
+BindsTo=pisowifi-app.service
+
+[Service]
+Type=simple
+ExecStart=/bin/sh /etc/pisowifi/qos.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

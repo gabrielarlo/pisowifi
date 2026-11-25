@@ -44,6 +44,9 @@ bash scripts/build-image.sh                      # build/pisowifi-opi-one.img (+
 
 # deploy to a live device (scope chosen from the diff via Laya/Jev)
 /deploy piso@192.168.1.50                        # see .opencode/commands/deploy.md
+
+# image version: device/version (MAJOR.MINOR.PATCH) is the source; /rebuild and /deploy bump it via
+# Laya/Jev before building/staging, and it installs as backend/app/version (patchable on all devices)
 ```
 
 ## Backend conventions
@@ -56,8 +59,10 @@ bash scripts/build-image.sh                      # build/pisowifi-opi-one.img (+
 - Client identity is derived **server-side** from the neighbor table (`client_mac`/`neighbor_mac`),
   and fails closed. `PISO_MOCK_MAC` and the `X-Dev-Mac` header are **dev/test only** — never set
   or enable them in the device image.
-- Config comes from `PISO_*` env vars. Generated secrets (admin password, JWT secret) must stay
-  out of source; credentials are persisted next to the DB with mode `0600`.
+- Config comes from `PISO_*` env vars. Default admin is `admin` / `admin@123`
+  (`PISO_ADMIN_USER` / `PISO_ADMIN_PASS` to override); console shows a warning while the
+  default is active — change it on first login. JWT secret via `PISO_JWT_SECRET` must stay
+  out of source; any generated secrets are persisted next to the DB with mode `0600`.
 - Sessions are the source of truth for access (`db.allowed_macs`); purchases/redeems insert a
   session, coin/voucher changes also write a transaction. Keep these together in one transaction.
 
@@ -96,6 +101,14 @@ bash scripts/build-image.sh                      # build/pisowifi-opi-one.img (+
   `ControlPersist=5m`) reused by rsync and the remote commands; the socket is closed on exit.
 - `/deploy` wraps this flow: inspects the diff, uses Laya (Jev fallback) to pick the scope, asks for
   confirmation, then checks the log for `OK: patch applied` versus `ROLLBACK`.
+- **`OK: patch applied` is not enough — verify the captive portal on the device before reporting
+  a live patch done.** Primary (SSH): confirm `pisowifi-app` actually restarted (`systemctl show pisowifi-app
+  -p ActiveEnterTimestamp --value` newer than the patch), all of `dnsmasq-main`, `dnsmasq-portal`,
+  `pisowifi-firewall`, `pisowifi-app`, `nginx` are `active`, `curl --interface 10.0.0.1
+  http://10.0.0.1/` returns `200` with the portal from `frontend/dist`, and a DNS query for any
+  name to `10.0.0.1:5353` answers `10.0.0.1`. Fallback (no SSH): verify from LAN that `curl http://192.168.100.27/api/portal/config` is `200` with current `frontend/dist`, and `curl -H "Host: captive.apple.com" http://192.168.100.27/hotspot-detect.html` returns `200` portal HTML (not `Success`), plus `nmap -p 22,80 192.168.100.27` shows `open`. `guest0` must be `state UP` with a client attached:
+  `NO-CARRIER` is an AP/link problem, not a patch failure (external AP in bridge mode is required).
+  An admin endpoint (`/api/admin/*`) returning `200` does not prove guests reach the portal.
 
 ## Security invariants (do not relax)
 
@@ -109,7 +122,8 @@ bash scripts/build-image.sh                      # build/pisowifi-opi-one.img (+
 - Frontend change → `npm run build`, then verify in the browser at 390×844 and 1200×900
   (no horizontal scroll, tables collapse to cards on mobile).
 - Device/config/patch change → `bash tests/test_patch.sh`; note that real hardware/systemd
-  behaviour is not exercised off-device and needs an on-device check.
+  behaviour is not exercised off-device and needs an on-device check. For a live patch, run the
+  captive-portal checks in Device & patch conventions above before reporting success.
 
 ## Not implemented (out of scope unless asked)
 

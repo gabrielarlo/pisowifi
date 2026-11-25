@@ -25,6 +25,7 @@ check() { if eval "$2"; then echo "OK   $1"; else echo "FAIL $1"; fail=1; fi; }
 
 check "boot files"            "test -d $R/boot && ls $R/boot | grep -q ."
 check "app backend"           "test -f $R/opt/pisowifi/backend/app/main.py"
+check "app version"           "test -s $R/opt/pisowifi/backend/app/version && grep -Eq \"^[0-9]+[.][0-9]+[.][0-9]+$\" $R/opt/pisowifi/backend/app/version"
 check "frontend dist"         "test -f $R/opt/pisowifi/frontend/dist/index.html"
 check "venv fastapi"          "test -d $R/opt/pisowifi/venv/lib/python3.13/site-packages/fastapi"
 check "dns configs"           "test -f $R/etc/pisowifi/dnsmasq-main.conf && test -f $R/etc/pisowifi/dnsmasq-portal.conf"
@@ -39,7 +40,8 @@ check "nginx preview proxy"   "grep -q \"/preview-portal/\" $R/etc/pisowifi/ngin
 check "preview auth"          "grep -q auth_basic_user_file $R/etc/pisowifi/nginx.conf && test -f $R/etc/pisowifi/htpasswd"
 check "preview credentials"   "test -f $R/etc/pisowifi/preview-credentials"
 check "no frame headers"      "! grep -qi \"X-Frame-Options\" $R/etc/pisowifi/nginx.conf"
-check "admin credentials"     "test -f $R/var/lib/pisowifi/admin-credentials"
+check "admin credentials"     "test -f $R/etc/pisowifi/admin-credentials && grep -q 'admin@123' $R/etc/pisowifi/admin-credentials"
+check "admin env fixed"         "grep -q 'PISO_ADMIN_PASS=admin@123' $R/etc/pisowifi/app.env"
 check "coind present"         "test -f $R/etc/pisowifi/coind.py"
 check "admin seeded"          "test -f $R/var/lib/pisowifi/pisowifi.db"
 check "ssh credentials"       "test -f $R/etc/pisowifi/ssh-credentials"

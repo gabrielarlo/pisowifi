@@ -42,7 +42,7 @@ restore() {
 
 restart_services() {
   [ -n "$AFFECTED" ] || return 0
-  local order="pisowifi-firewall dnsmasq-main dnsmasq-portal pisowifi-app pisowifi-sync pisowifi-coind nginx"
+  local order="pisowifi-firewall dnsmasq-main dnsmasq-portal pisowifi-app pisowifi-sync pisowifi-coind pisowifi-qos nginx"
   local svc
   for svc in $order; do
     if printf '%s\n' "$AFFECTED" | grep -qx "$svc"; then
@@ -69,7 +69,7 @@ map_dest() {
   case "$1" in
     backend/app/*)  echo "$BACKEND/app/${1#backend/app/}" ;;
     frontend/dist/*) echo "$FRONTEND/dist/${1#frontend/dist/}" ;;
-    device/nginx.conf|device/dnsmasq-*.conf|device/firewall.sh|device/sync.sh|device/coind.py)
+    device/nginx.conf|device/dnsmasq-*.conf|device/firewall.sh|device/sync.sh|device/qos.sh|device/coind.py)
       echo "$CONFIG/$(basename "$1")" ;;
     *) return 1 ;;
   esac
@@ -84,6 +84,7 @@ services_for() {
     device/dnsmasq-portal.conf) echo dnsmasq-portal ;;
     device/firewall.sh)     echo pisowifi-firewall pisowifi-sync ;;
     device/sync.sh)         echo pisowifi-sync ;;
+    device/qos.sh)          echo pisowifi-qos ;;
     device/coind.py)        echo pisowifi-coind ;;
   esac
 }
@@ -143,6 +144,9 @@ main() {
   fi
   if printf '%s\n' "$files" | grep -q '^device/firewall.sh$'; then
     sh -n "$CONFIG/firewall.sh" || fail "firewall syntax invalid"
+  fi
+  if printf '%s\n' "$files" | grep -q '^device/qos.sh$'; then
+    sh -n "$CONFIG/qos.sh" || fail "qos syntax invalid"
   fi
   if printf '%s\n' "$files" | grep -q '^device/coind.py$'; then
     "$VENV/bin/python" -m py_compile "$CONFIG/coind.py" || fail "coind syntax invalid"

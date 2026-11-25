@@ -23,3 +23,10 @@ docker run --rm --privileged --userns=host \
   debian:trixie bash /work/scripts/build-image-in-docker.sh
 
 echo "Done: $BUILD/pisowifi-opi-one.img"
+if [ -f "$ROOT/secrets/ssh-credentials" ] && [ -f "$ROOT/secrets/admin-credentials" ]; then
+  chmod 600 "$ROOT/secrets/ssh-credentials" "$ROOT/secrets/admin-credentials" 2>/dev/null || true
+  echo "Secrets refreshed: $ROOT/secrets/ssh-credentials + $ROOT/secrets/admin-credentials (0600) — use for next flash/login"
+fi
+if [ -f "$BUILD/secrets/ssh-credentials" ]; then
+  echo "Also copied to $BUILD/secrets/ + $BUILD/*.sha256"
+fi

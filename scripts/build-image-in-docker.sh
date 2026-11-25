@@ -56,53 +56,76 @@ mkdir -p "$ROOTFS/opt/pisowifi/backend" "$ROOTFS/opt/pisowifi/frontend/dist" \
          "$ROOTFS/lib/systemd/system" "$ROOTFS/usr/lib/systemd/network" \
          "$ROOTFS/var/lib/pisowifi"
 cp -a /work/backend/app "$ROOTFS/opt/pisowifi/backend/"
+cp /work/device/version "$ROOTFS/opt/pisowifi/backend/app/version"
 cp -a /work/frontend/dist/. "$ROOTFS/opt/pisowifi/frontend/dist/"
 cp -a /build/wheels/. "$ROOTFS/opt/pisowifi/wheels/"
 cp /work/device/dnsmasq-main.conf /work/device/dnsmasq-portal.conf \
    /work/device/nginx.conf /work/device/firewall.sh /work/device/sync.sh \
-   /work/device/coind.py "$ROOTFS/etc/pisowifi/"
+   /work/device/qos.sh /work/device/coind.py "$ROOTFS/etc/pisowifi/"
 cp /work/device/10-piso-guest.link "$ROOTFS/usr/lib/systemd/network/"
 mkdir -p "$ROOTFS/usr/local/bin" "$ROOTFS/var/backups/pisowifi"
 cp /work/device/piso-patch "$ROOTFS/usr/local/bin/"
 chmod 755 "$ROOTFS/usr/local/bin/piso-patch"
 touch "$ROOTFS/var/log/piso-patch.log"
 for unit in pisowifi-network pisowifi-firewall pisowifi-app pisowifi-sync \
-            pisowifi-coind dnsmasq-main dnsmasq-portal; do
+            pisowifi-coind pisowifi-qos dnsmasq-main dnsmasq-portal; do
   cp "/work/device/$unit.service" "$ROOTFS/lib/systemd/system/"
 done
+chmod +x "$ROOTFS/etc/pisowifi/qos.sh" "$ROOTFS/etc/pisowifi/firewall.sh" "$ROOTFS/etc/pisowifi/sync.sh" 2>/dev/null || true
 cp /usr/bin/qemu-arm-static "$ROOTFS/usr/bin/" 2>/dev/null || true
 rm -f "$ROOTFS/etc/resolv.conf"
 cp /etc/resolv.conf "$ROOTFS/etc/resolv.conf"
 
 echo "[builder] Installing device packages and configuring rootfs..."
+# SD-wear hardening: tmpfs for volatile logs + WAL-friendly DB (actual mounts happen at boot)
+cat >> "$ROOTFS/etc/fstab" <<'FSTAB'
+
+# Piso: RAM logs — avoids constant SD writes; pisowifi-sync checkpoints WAL every 30s
+tmpfs /var/log tmpfs defaults,noatime,nosuid,mode=0755,size=50M 0 0
+tmpfs /var/tmp tmpfs defaults,noatime,nosuid,mode=0755,size=20M 0 0
+FSTAB
+mkdir -p "$ROOTFS/etc/systemd/journald.conf.d"
+cat > "$ROOTFS/etc/systemd/journald.conf.d/99-piso-volatile.conf" <<'JC'
+[Journal]
+Storage=volatile
+RuntimeMaxUse=30M
+SystemMaxUse=30M
+JC
+# Ensure /var/log exists after tmpfs mount
+mkdir -p "$ROOTFS/var/log/journal"
+
 chroot "$ROOTFS" /bin/bash <<'CHROOT'
 set -e
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y -qq --no-install-recommends \
-  python3 python3-venv nginx ipset iptables dnsmasq openssh-server \
+  python3 python3-venv nginx ipset iptables dnsmasq openssh-server iproute2 \
   gpiod sudo openssl curl wget ca-certificates gnupg
 
 python3 -m venv /opt/pisowifi/venv
 /opt/pisowifi/venv/bin/pip install --quiet --no-index \
   --find-links=/opt/pisowifi/wheels fastapi uvicorn pydantic PyJWT
 
-# Runtime env: random JWT secret and admin password; no mock MAC on the device.
+# Runtime env: random JWT secret; fixed admin password admin@123; no mock MAC on the device.
 secret="$(openssl rand -hex 32)"
 previewpass="$(openssl rand -base64 18)"
 printf 'preview:%s\n' "$(openssl passwd -apr1 "$previewpass")" > /etc/pisowifi/htpasswd
 printf 'user: admin\npassword: %s\n' "$previewpass" > /etc/pisowifi/preview-credentials
 chmod 600 /etc/pisowifi/htpasswd /etc/pisowifi/preview-credentials
+# Default admin password is fixed to admin@123 — warn in console to change it.
+printf 'user: admin\npassword: admin@123\n' > /etc/pisowifi/admin-credentials
+chmod 600 /etc/pisowifi/admin-credentials
 cat > /etc/pisowifi/app.env <<EOF
 PISO_DB_PATH=/var/lib/pisowifi/pisowifi.db
 PISO_JWT_SECRET=$secret
 PISO_ADMIN_USER=admin
+PISO_ADMIN_PASS=admin@123
 EOF
 chmod 600 /etc/pisowifi/app.env
 
 # SSH user for terminal access; Tailscale installed manually by the user.
 useradd -m -s /bin/bash piso 2>/dev/null || true
-echo 'piso ALL=(root) NOPASSWD: /usr/local/bin/piso-patch, /usr/bin/apt-get, /usr/bin/apt, /usr/bin/gpg, /usr/bin/tee, /usr/bin/systemctl, /usr/bin/tailscale, /usr/sbin/tailscale' > /etc/sudoers.d/piso
+echo 'piso ALL=(root) NOPASSWD: /usr/local/bin/piso-patch, /usr/bin/apt-get, /usr/bin/apt, /usr/bin/gpg, /usr/bin/tee, /usr/bin/systemctl, /usr/bin/journalctl, /usr/sbin/usermod, /usr/bin/ethtool, /usr/bin/tailscale, /usr/sbin/tailscale' > /etc/sudoers.d/piso
 chmod 440 /etc/sudoers.d/piso
 sshpass="$(openssl rand -base64 18)"
 echo "piso:$sshpass" | chpasswd
@@ -117,7 +140,7 @@ ln -sf /etc/pisowifi/nginx.conf /etc/nginx/sites-enabled/pisowifi
 nginx -t
 
 for unit in pisowifi-network pisowifi-firewall pisowifi-app pisowifi-sync \
-            pisowifi-coind dnsmasq-main dnsmasq-portal ssh; do
+            pisowifi-coind pisowifi-qos dnsmasq-main dnsmasq-portal ssh; do
   SYSTEMD_OFFLINE=1 systemctl enable "$unit" 2>/dev/null || true
 done
 # Stock dnsmasq would grab port 53 before dnsmasq-main; disable and mask it.
@@ -127,9 +150,24 @@ ln -sf /dev/null /etc/systemd/system/dnsmasq.service
 # Explicit seed now (idempotent at startup too).
 cd /opt/pisowifi/backend
 PISO_DB_PATH=/var/lib/pisowifi/pisowifi.db \
-PISO_ADMIN_USER=admin PISO_JWT_SECRET="$secret" \
+PISO_ADMIN_USER=admin PISO_ADMIN_PASS=admin@123 PISO_JWT_SECRET="$secret" \
 /opt/pisowifi/venv/bin/python -c 'from app import db; db.init_db()'
 CHROOT
+
+echo "[builder] Exporting fresh credentials to host secrets/..."
+mkdir -p /work/secrets /build/secrets
+cp -a "$ROOTFS/etc/pisowifi/ssh-credentials" /work/secrets/ssh-credentials
+cp -a "$ROOTFS/etc/pisowifi/ssh-credentials" /build/secrets/ssh-credentials
+cp -a "$ROOTFS/etc/pisowifi/admin-credentials" /work/secrets/admin-credentials
+cp -a "$ROOTFS/etc/pisowifi/admin-credentials" /build/secrets/admin-credentials
+chmod 600 /work/secrets/ssh-credentials /work/secrets/admin-credentials 2>/dev/null || true
+chmod 600 /build/secrets/ssh-credentials /build/secrets/admin-credentials 2>/dev/null || true
+cp -a "$ROOTFS/etc/pisowifi/ssh-credentials" /build/ssh-credentials 2>/dev/null || true
+cp -a "$ROOTFS/etc/pisowifi/admin-credentials" /build/admin-credentials 2>/dev/null || true
+# Also keep a copy of preview credentials separately for reference
+cp -a "$ROOTFS/etc/pisowifi/preview-credentials" /work/secrets/preview-credentials 2>/dev/null || true
+cp -a "$ROOTFS/etc/pisowifi/preview-credentials" /build/preview-credentials 2>/dev/null || true
+echo "[builder] secrets exported to /work/secrets/ (and /build/secrets/) — mode 0600"
 
 echo "[builder] Verifying rootfs..."
 chroot "$ROOTFS" /opt/pisowifi/venv/bin/python -c "import fastapi, uvicorn, jwt; print('python deps OK')"

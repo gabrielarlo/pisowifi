@@ -1,0 +1,105 @@
+[  227621ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:5173/api/auth/login:0
+[  232135ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:5173/api/auth/login:0
+[  243934ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:5173/api/auth/login:0
+[  245045ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:5173/api/auth/login:0
+[  245190ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:5173/api/auth/login:0
+[  246214ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:5173/api/auth/login:0
+[ 1714392ms] [ERROR] ReferenceError: computed is not defined
+    at setup (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:2:35256)
+    at Is (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:21516)
+    at Wa (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63356)
+    at Ga (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63145)
+    at Ue (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50590)
+    at Ie (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50481)
+    at S (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:47069)
+    at Io.N [as fn] (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:51796)
+    at Io.run (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:6931)
+    at W (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:52173) @ http://127.0.0.1:5173/assets/index-B3lN7kV0.js:0
+[ 1720800ms] [ERROR] ReferenceError: computed is not defined
+    at setup (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:2:35256)
+    at Is (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:21516)
+    at Wa (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63356)
+    at Ga (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63145)
+    at Ue (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50590)
+    at Ie (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50481)
+    at S (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:47069)
+    at Io.N [as fn] (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:51796)
+    at Io.run (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:6931)
+    at W (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:52173) @ http://127.0.0.1:5173/assets/index-B3lN7kV0.js:0
+[ 1723104ms] [ERROR] ReferenceError: computed is not defined
+    at setup (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:2:35256)
+    at Is (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:21516)
+    at Wa (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63356)
+    at Ga (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63145)
+    at Ue (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50590)
+    at Ie (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50481)
+    at S (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:47069)
+    at Io.N [as fn] (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:51796)
+    at Io.run (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:6931)
+    at W (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:52173) @ http://127.0.0.1:5173/assets/index-B3lN7kV0.js:0
+[ 1724839ms] [ERROR] ReferenceError: computed is not defined
+    at setup (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:2:35256)
+    at Is (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:21516)
+    at Wa (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63356)
+    at Ga (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63145)
+    at Ue (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50590)
+    at Ie (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50481)
+    at S (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:47069)
+    at Io.N [as fn] (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:51796)
+    at Io.run (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:6931)
+    at W (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:52173) @ http://127.0.0.1:5173/assets/index-B3lN7kV0.js:0
+[ 1725916ms] [ERROR] ReferenceError: computed is not defined
+    at setup (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:2:35256)
+    at Is (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:21516)
+    at Wa (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63356)
+    at Ga (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63145)
+    at Ue (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50590)
+    at Ie (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50481)
+    at S (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:47069)
+    at Io.N [as fn] (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:51796)
+    at Io.run (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:6931)
+    at W (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:52173) @ http://127.0.0.1:5173/assets/index-B3lN7kV0.js:0
+[ 1726631ms] [ERROR] ReferenceError: computed is not defined
+    at setup (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:2:35256)
+    at Is (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:21516)
+    at Wa (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63356)
+    at Ga (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63145)
+    at Ue (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50590)
+    at Ie (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50481)
+    at S (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:47069)
+    at Io.N [as fn] (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:51796)
+    at Io.run (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:6931)
+    at W (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:52173) @ http://127.0.0.1:5173/assets/index-B3lN7kV0.js:0
+[ 1773790ms] [ERROR] ReferenceError: computed is not defined
+    at setup (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:2:35256)
+    at Is (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:21516)
+    at Wa (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63356)
+    at Ga (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63145)
+    at Ue (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50590)
+    at Ie (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50481)
+    at S (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:47069)
+    at Io.N [as fn] (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:51796)
+    at Io.run (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:6931)
+    at W (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:52173) @ http://127.0.0.1:5173/assets/index-B3lN7kV0.js:0
+[ 1774513ms] [ERROR] ReferenceError: computed is not defined
+    at setup (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:2:35256)
+    at Is (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:21516)
+    at Wa (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63356)
+    at Ga (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63145)
+    at Ue (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50590)
+    at Ie (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50481)
+    at S (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:47069)
+    at Io.N [as fn] (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:51796)
+    at Io.run (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:6931)
+    at W (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:52173) @ http://127.0.0.1:5173/assets/index-B3lN7kV0.js:0
+[ 1781304ms] [ERROR] ReferenceError: computed is not defined
+    at setup (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:2:35256)
+    at Is (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:21516)
+    at Wa (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63356)
+    at Ga (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:63145)
+    at Ue (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50590)
+    at Ie (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:50481)
+    at S (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:47069)
+    at Io.N [as fn] (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:51796)
+    at Io.run (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:6931)
+    at W (http://127.0.0.1:5173/assets/index-B3lN7kV0.js:1:52173) @ http://127.0.0.1:5173/assets/index-B3lN7kV0.js:0

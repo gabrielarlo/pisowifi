@@ -1,0 +1,16 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e11]:
+      - heading "Piso WiFi · Admin" [level=1] [ref=e12]
+      - paragraph [ref=e13]:
+        - generic [ref=e14]: 192.168.100.27
+        - generic [ref=e15]: · read-only status
+  - main [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - paragraph [ref=e19]: Admin network
+        - heading "Sign in to view system status" [level=2] [ref=e20]
+      - generic [ref=e21]:
+        - heading "Admin access only" [level=3] [ref=e27]
+        - paragraph [ref=e28]: This page shows a live, read-only snapshot of the hotspot. Full controls — plans, vouchers, sessions and settings — live inside the console and are reachable only from this admin network.
+        - paragraph [ref=e29]: Sign in at /console on this host. Return here to / for a quick health check.

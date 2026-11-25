@@ -26,8 +26,11 @@ STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"; [ -n "${CTL:-}" ] && ssh -S "$CTL" -O exit "$TARGET" 2>/dev/null || true' EXIT
 
 mkdir -p "$STAGE/backend/app" "$STAGE/frontend/dist" "$STAGE/device"
+# Version always ships: backend/app/* is accepted by every released piso-patch.
+cp "$ROOT/device/version" "$STAGE/backend/app/version"
 if [ "$SCOPE" = "--code" ] || [ "$SCOPE" = "--all" ]; then
-  cp -a "$ROOT/backend/app/." "$STAGE/backend/app/"
+  # Exclude host __pycache__/*.pyc — device recompiles on restart
+  rsync -a --exclude='__pycache__' --exclude='*.pyc' --exclude='*.pyo' "$ROOT/backend/app/" "$STAGE/backend/app/"
   cp -a "$ROOT/frontend/dist/." "$STAGE/frontend/dist/"
 fi
 if [ "$SCOPE" = "--configs" ] || [ "$SCOPE" = "--all" ]; then
@@ -50,4 +53,9 @@ echo "Uploading patch..."
 rsync -a -e "ssh -S $CTL" "$STAGE/" "$TARGET:$REMOTE_STAGE/"
 echo "Applying on device..."
 ssh -S "$CTL" "$TARGET" "sudo /usr/local/bin/piso-patch '$REMOTE_STAGE'"
-ssh -S "$CTL" "$TARGET" "rm -rf '$REMOTE_STAGE'; tail -n 5 /var/log/piso-patch.log"
+# piso-patch can report OK without restarting pisowifi-app; force it so new backend code is loaded
+if [ "$SCOPE" = "--code" ] || [ "$SCOPE" = "--all" ]; then
+  echo "Ensuring pisowifi-app picked up new code..."
+  ssh -S "$CTL" "$TARGET" "sudo /usr/bin/systemctl restart pisowifi-app"
+fi
+ssh -S "$CTL" "$TARGET" "rm -rf '$REMOTE_STAGE'; tail -n 5 /var/log/piso-patch.log; systemctl show pisowifi-app -p ActiveEnterTimestamp --value"

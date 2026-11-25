@@ -7,6 +7,7 @@ services:
       PISO_MOCK_MAC: ${PISO_MOCK_MAC:-aa:bb:cc:dd:ee:01}
     volumes:
       - piso-data:/data
+      - ./device/version:/device/version:ro
 
   frontend:
     build: ./frontend

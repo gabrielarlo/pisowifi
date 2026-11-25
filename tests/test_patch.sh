@@ -92,5 +92,10 @@ wait "$pid" 2>/dev/null || true
 grep -q 'new nginx' "$R/etc/pisowifi/nginx.conf" && ok "SIGHUP rollback restores file" || bad "SIGHUP rollback restores file"
 grep -q 'INTERRUPTED' "$PISO_LOG" && ok "SIGHUP logged" || bad "SIGHUP logged"
 
+# 6. version staged under backend/app is accepted by the already-deployed allow-list
+S6="$TMP/s6"; mkdir -p "$S6/backend/app"; printf '1.2.3\n' > "$S6/backend/app/version"
+if "$TMP/piso-patch" "$S6" >/dev/null 2>&1; then ok "version patch accepted"; else bad "version patch accepted"; fi
+grep -q '1.2.3' "$R/opt/pisowifi/backend/app/version" && ok "version applied" || bad "version applied"
+
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
